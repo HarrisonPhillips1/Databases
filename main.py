@@ -2,7 +2,7 @@ import sqlite3
 
 db_file = 'airline.db'
 
-def create_database():
+def create_database(): # Function to Create the Airline Database Tables, as per schema
 
     try:
         conn = sqlite3.connect(db_file)
@@ -112,7 +112,7 @@ def create_database():
         if conn:
             conn.close()
 
-def populate_data():
+def populate_data(): # Populating the Tables created above
 
     try:
         conn = sqlite3.connect(db_file)
@@ -241,7 +241,7 @@ def populate_data():
             conn.close()
 
 
-def display_menu():
+def display_menu(): # Presenting the available options ready for user input
     print("\nAirline Database - Welcome!")
     print("1. Add a New Flight")
     print("2. View Flights by Criteria")
@@ -252,7 +252,7 @@ def display_menu():
     print("7. Exit Program")
     print("8. Bonus - Stats Mode")
 
-def get_user_input():
+def get_user_input(): # Function to get user input, includes validation to ensure the input is within our range (1-8)
     while True:
         try:
             choice = int(input("Enter your choice: "))
@@ -263,7 +263,7 @@ def get_user_input():
             print("Invalid Input. Please enter a number from the list.")
 
 
-def add_new_flight():
+def add_new_flight(): # Seperate Function for adding flights. Gathers inputs and passes to an SQL command before executing
     print("Adding New Flight - Please Enter Details below:\n")
 
     try:
@@ -282,7 +282,7 @@ def add_new_flight():
               INSERT INTO Flights (FlightNumber, DepartureDateTime, ArrivalDateTime, Status, DestinationID, PilotID, AircraftID) 
               VALUES (?,?,?,?,?,?,?)
               '''
-        cursor.execute(sql, (flight_number, departure_datetime, arrival_datetime, status, destination_id, pilot_id, aircraft_id))
+        cursor.execute(sql, (flight_number, departure_datetime, arrival_datetime, status, destination_id, pilot_id, aircraft_id)) # Avoid SQL Injection through ? placeholders
 
         conn.commit()
         print("Flight Added Successfully!")
@@ -296,7 +296,7 @@ def add_new_flight():
             conn.close()
 
 
-def query_flights():
+def query_flights(): # Seperate Function for querying flights. Gathers inputs and builds an SQL command before executing
     print("Querying Flights")
 
     try:
@@ -320,13 +320,13 @@ def query_flights():
             sql += " AND DepartureDateTime = ?"
             params.append(departuredatetime)
 
-        cursor.execute(sql, tuple(params))  # Pass parameters as a tuple
+        cursor.execute(sql, tuple(params))  # Pass parameters as a tuple, the user does not have to specify each input
         flights = cursor.fetchall()
 
         if flights:
             print("\nRetrieved Flights:")
             print("Flight Number | Departure Date/Time | Arrival Date/Time | Status | Destination ID | Pilot ID | Aircraft ID")
-            print("-" * 130)  # Separator line
+            print("-" * 130)  # Separator line, provides nice formatting for UI
 
             for flight in flights:
                 print(f"{flight[0]:<13} | {flight[1]:<20} | {flight[2]:<20} | {flight[3]:<8} | {flight[4]:<14} | {flight[5]:<8} | {flight[6]:<11}")
@@ -342,7 +342,7 @@ def query_flights():
             conn.close()
 
 
-def update_flight():
+def update_flight(): # Seperate Function for updating flights. Gathers inputs and passes to an SQL command before executing
     print("Updating Flight")
 
     try:
@@ -360,13 +360,11 @@ def update_flight():
             print("Arrival Time:", flight[2])
             print("Status:", flight[3])
 
-            # Prompt for fields to update
-            new_departure_time = input("Enter new Departure Time (YYYY-MM-DD HH:MM:SS, or leave blank): ")
+            new_departure_time = input("Enter new Departure Time (YYYY-MM-DD HH:MM:SS, or leave blank): ") # Prompt for fields to update
             new_arrival_time = input("Enter new Arrival Time (YYYY-MM-DD HH:MM:SS, or leave blank): ")
             new_status = input("Enter new Status (or leave blank): ")
 
-            # Construct the UPDATE query
-            sql = "UPDATE Flights SET"
+            sql = "UPDATE Flights SET" # Construct the UPDATE query
             params = []
 
             if new_departure_time:
@@ -380,9 +378,8 @@ def update_flight():
             if new_status:
                 sql += " Status = ?,"
                 params.append(new_status)
-
-            # Remove trailing comma from SQL query
-            sql = sql.rstrip(',')
+            
+            sql = sql.rstrip(',') # Remove trailing comma from SQL query
 
             if params:  # Only execute update if there are changes
                 sql += " WHERE FlightNumber = ?"
@@ -402,7 +399,7 @@ def update_flight():
             conn.close()
 
 
-def assign_pilot():
+def assign_pilot(): # Seperate Function for assigning pilots. Gathers inputs and passes to an SQL command before executing
     print("Assign Pilot to Flight")
     
     try:
@@ -410,9 +407,8 @@ def assign_pilot():
         cursor = conn.cursor()
 
         flight_number = input("Enter the Flight Number to assign a pilot to: ")
-
-        # Check if the flight exists
-        cursor.execute("SELECT * FROM Flights WHERE FlightNumber = ?", (flight_number,))
+        
+        cursor.execute("SELECT * FROM Flights WHERE FlightNumber = ?", (flight_number,)) # Check if the flight exists
         flight = cursor.fetchone()
 
         if flight:
@@ -422,8 +418,7 @@ def assign_pilot():
             print("Arrival Time:", flight[2])
             print("Current Pilot ID:", flight[5] if flight[5] else "Not assigned") # Index 5 is PilotID
 
-            # Display available pilots
-            cursor.execute("SELECT PilotID, FirstName, LastName FROM Pilots")
+            cursor.execute("SELECT PilotID, FirstName, LastName FROM Pilots") # Display available pilots
             pilots = cursor.fetchall()
 
             if pilots:
@@ -432,9 +427,8 @@ def assign_pilot():
                     print(f"{pilot[0]}: {pilot[1]} {pilot[2]}")
 
                 pilot_id_to_assign = input("Enter the Pilot ID to assign to this flight")
-
-                    # Check if the entered Pilot ID exists
-                cursor.execute("SELECT PilotID FROM Pilots WHERE PilotID = ?", (pilot_id_to_assign,))
+                    
+                cursor.execute("SELECT PilotID FROM Pilots WHERE PilotID = ?", (pilot_id_to_assign,)) # Check if the entered Pilot ID exists
                 existing_pilot = cursor.fetchone()
 
                 if existing_pilot:
@@ -460,7 +454,7 @@ def assign_pilot():
             conn.close()
 
 
-def view_pilot_schedule():
+def view_pilot_schedule(): # Seperate Function for viewing pilots flight schedule. Gathers inputs and passes to an SQL command before executing
     print("Viewing Pilot Schedule")
 
     try:
@@ -468,9 +462,8 @@ def view_pilot_schedule():
         cursor = conn.cursor()
 
         pilot_id = input("Enter the Pilot ID to view the schedule for: ")
-
-        # Check if the Pilot ID exists
-        cursor.execute("SELECT PilotID, FirstName, LastName FROM Pilots WHERE PilotID = ?", (pilot_id,))
+ 
+        cursor.execute("SELECT PilotID, FirstName, LastName FROM Pilots WHERE PilotID = ?", (pilot_id,)) # Check if the Pilot ID exists
         pilot = cursor.fetchone()
 
         if pilot:
@@ -506,7 +499,7 @@ def view_pilot_schedule():
             conn.close()
 
 
-def update_destination_info():
+def update_destination_info(): # Seperate Function for updating destination information. Gathers inputs and passes to an SQL command before executing
     print("Updating Destination Information")
 
     try:
@@ -515,11 +508,10 @@ def update_destination_info():
 
         destination_id_to_update = input("Enter the Destination ID to update: ")
 
-        # Check if the destination exists
-        cursor.execute("SELECT * FROM Destinations WHERE DestinationID = ?", (destination_id_to_update,))
+        cursor.execute("SELECT * FROM Destinations WHERE DestinationID = ?", (destination_id_to_update,)) # Check if the destination exists
         destination = cursor.fetchone()
 
-        if destination:
+        if destination: # Output current Destination Info
             print("\nCurrent Destination Information:")
             print("Destination ID:", destination[0])
             print("City:", destination[1])
@@ -544,9 +536,8 @@ def update_destination_info():
             if new_airport_code:
                 sql += " AirportCode = ?,"
                 params.append(new_airport_code)
-
-            # Remove trailing comma if any updates were added
-            sql = sql.rstrip(',')
+    
+            sql = sql.rstrip(',') # Remove trailing comma if any updates were added
 
             if params:
                 sql += " WHERE DestinationID = ?"
@@ -569,11 +560,13 @@ def update_destination_info():
             conn.close()
 
 
-def statistic_mode():
+def statistic_mode(): # Example SQL Commands for queries that can be performed on the database
+    
     try:
         conn = sqlite3.Connection(db_file)
         cursor = conn.cursor()
 
+        # Query - Number of Flights to each Destination
         cursor.execute("""
             SELECT
                 d.City,
@@ -599,7 +592,7 @@ def statistic_mode():
         else:
             print("No flights found in the database.")
 
-
+        # Query - Number of Flights assigned to each Pilot
         cursor.execute("""
             SELECT
                 p.FirstName,
@@ -626,7 +619,7 @@ def statistic_mode():
         else:
             print("No pilots found in the database.")
 
-
+        # Query - Lists all Aircraft and the number of Flights they've been used for
         cursor.execute("""
             SELECT
                 a.Model,
@@ -661,8 +654,7 @@ def statistic_mode():
             conn.close()
 
 
-
-def main():
+def main(): # Initialising the Database and associated data. Simple IF/ELSE Statements to direct user based on input
     create_database()
     populate_data()
 
